@@ -61,6 +61,7 @@ func BatchModeEndpointRouter(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				batchModeEndpointLogger("/api/dhcp_assignments","unable to parse query", r.RemoteAddr, endpointURI.RawQuery,err)
+				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
