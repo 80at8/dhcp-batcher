@@ -1,3 +1,7 @@
+// dhcp-batcher
+// e-mail andy@sonar.software if you have questions
+// not for prod use, poc only.
+
 package main
 
 import (
