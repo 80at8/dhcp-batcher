@@ -20,13 +20,13 @@ func init() {
 	pass := "test"
 	mockRouter := "1.2.3.4"
 
-	batchOptions.batchSchedulerCycleTime = &st
-	batchOptions.sonarAPIKey = &key
-	batchOptions.sonarAPIUsername = &user
-	batchOptions.sonarInstanceName = &inst
-	batchOptions.batchEndpointUsername = &user
-	batchOptions.batchEndpointPassword = &pass
-	batchOptions.batchEndpointRouterIPList = &mockRouter
+	batchProxyOptions.batchSchedulerCycleTime = &st
+	batchProxyOptions.sonarAPIKey = &key
+	batchProxyOptions.sonarAPIUsername = &user
+	batchProxyOptions.sonarInstanceName = &inst
+	batchProxyOptions.batchEndpointUsername = &user
+	batchProxyOptions.batchEndpointPassword = &pass
+	batchProxyOptions.batchEndpointRouterIPList = &mockRouter
 
 
 	batchTable.initializeTable()
@@ -59,12 +59,12 @@ func TestBatchModeEndpointRouter(t *testing.T) {
 	pass := "test"
 	mockRouter := "1.2.3.4"
 
-	initializeBatchConfiguration()
+	initializeBatchProxyConfiguration()
 	batchTable.initializeTable()
 
-	batchOptions.batchEndpointUsername = &user
-	batchOptions.batchEndpointPassword = &pass
-	batchOptions.batchEndpointRouterIPList = &mockRouter
+	batchProxyOptions.batchEndpointUsername = &user
+	batchProxyOptions.batchEndpointPassword = &pass
+	batchProxyOptions.batchEndpointRouterIPList = &mockRouter
 
 	var th [10]handlerTest
 

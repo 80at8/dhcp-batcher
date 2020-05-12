@@ -29,6 +29,7 @@ type recordTable struct {
 	sonarAPIKey   string
 	sonarUser	  string
 	currentID     batchID
+	skippedID	  batchID
 	entry         map[string]Assignment
 }
 
@@ -38,16 +39,17 @@ func (b *recordTable) initializeTable() {
 	logger.Info("initializing batch scheduler.")
 	b.entry = make(map[string]Assignment)
 	b.currentID = batchID(0)
-	b.sonarAPIKey = *batchOptions.sonarAPIKey
-	b.sonarUser = *batchOptions.sonarAPIUsername
-	b.sonarInstance = *batchOptions.sonarInstanceName
+	b.skippedID = batchID(0)
+	b.sonarAPIKey = *batchProxyOptions.sonarAPIKey
+	b.sonarUser = *batchProxyOptions.sonarAPIUsername
+	b.sonarInstance = *batchProxyOptions.sonarInstanceName
 	logger.Info("scheduler init: sonar instance is ", b.sonarInstance)
-	if *batchOptions.batchSchedulerCycleTime == 0 {
+	if *batchProxyOptions.batchSchedulerCycleTime == 0 {
 		b.cycleTime = time.Duration(15) * time.Second // realtime polling.
 		logger.Warn("scheduler init: batch scheduling cycle time is set to near-realtime (15 seconds), for sonar instances with large client subnets this is can be a problem")
 		logger.Warn("                consider using '--batch_cycle_time 5' (5 minutes) if you have issues")
 	} else {
-		b.cycleTime = time.Duration(*batchOptions.batchSchedulerCycleTime) * time.Minute
+		b.cycleTime = time.Duration(*batchProxyOptions.batchSchedulerCycleTime) * time.Minute
 		logger.Info("scheduler init: batch scheduling cycle time is set to ", b.cycleTime.String())
 	}
 }
@@ -124,13 +126,12 @@ func (b *recordTable) RunBatchScheduler(ctl chan bool) {
 				go sendBatch(t)
 
 			} else {
-				logger.Info("batch scheduler: batch table is empty.. skipping.")
+				b.skippedID++
+				logger.Info("batch scheduler: batch table is empty.. skipping (", b.skippedID,")")
 			}
 		}
 	}
 }
-
-
 
 func sendBatch(t []Assignment) {
 
@@ -152,12 +153,12 @@ func sendBatch(t []Assignment) {
 	}
 
 
-	if (*batchOptions.sonarVersion == 1) {
+	if (*batchProxyOptions.sonarVersion == 1) {
 
 		client := http.Client{}
 
-		req, err := http.NewRequest("POST", "https://" + *batchOptions.sonarInstanceName +"/api/v1/network/ipam/batch_dynamic_ip_assignment", bytes.NewBuffer(data))
-		req.SetBasicAuth(*batchOptions.sonarAPIUsername, *batchOptions.sonarAPIKey)
+		req, err := http.NewRequest("POST", "https://" + *batchProxyOptions.sonarInstanceName +"/api/v1/network/ipam/batch_dynamic_ip_assignment", bytes.NewBuffer(data))
+		req.SetBasicAuth(*batchProxyOptions.sonarAPIUsername, *batchProxyOptions.sonarAPIKey)
 		req.Header.Set("Content-Type", "application/json")
 
 		response, err := client.Do(req)
@@ -188,7 +189,7 @@ func sendBatch(t []Assignment) {
 	}
 
 	// add v2 endpoint code here
-	if (*batchOptions.sonarVersion == 2) {
+	if (*batchProxyOptions.sonarVersion == 2) {
 
 	}
 

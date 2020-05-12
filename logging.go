@@ -15,7 +15,7 @@ const (
 var logger = logrus.New()
 
 func initializeLogging() {
-	switch strings.ToLower(*batchOptions.batchEndpointLoggingFormat) {
+	switch strings.ToLower(*batchProxyOptions.batchEndpointLoggingFormat) {
 	case "json":
 		logger.SetFormatter(&logrus.JSONFormatter{})
 	case "text":
@@ -27,7 +27,7 @@ func initializeLogging() {
 		})
 	}
 
-	switch strings.ToLower(*batchOptions.batchEndpointLoggingMode) {
+	switch strings.ToLower(*batchProxyOptions.batchEndpointLoggingMode) {
 	case "debug":
 		logger.SetLevel(logrus.DebugLevel)
 		break
@@ -43,10 +43,10 @@ func initializeLogging() {
 	}
 
 	logger.SetOutput(os.Stderr)
-	if strings.ToLower(*batchOptions.batchEndpointLoggingOutput) != "console" {
-		file, err := os.OpenFile(strings.ToLower(*batchOptions.batchEndpointLoggingOutput), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if strings.ToLower(*batchProxyOptions.batchEndpointLoggingOutput) != "console" {
+		file, err := os.OpenFile(strings.ToLower(*batchProxyOptions.batchEndpointLoggingOutput), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
-			logger.Error("logger: unable to open ", batchOptions.batchEndpointLoggingOutput)
+			logger.Error("logger: unable to open ", batchProxyOptions.batchEndpointLoggingOutput)
 			logger.Error(err.Error())
 			logger.Error("logger: output is set to stderr")
 		} else {

@@ -17,10 +17,10 @@ func init() {
 	user := "test"
 	inst := "test.sonar.software"
 
-	batchOptions.batchSchedulerCycleTime = &st
-	batchOptions.sonarAPIKey = &key
-	batchOptions.sonarAPIUsername = &user
-	batchOptions.sonarInstanceName = &inst
+	batchProxyOptions.batchSchedulerCycleTime = &st
+	batchProxyOptions.sonarAPIKey = &key
+	batchProxyOptions.sonarAPIUsername = &user
+	batchProxyOptions.sonarInstanceName = &inst
 
 	batchTable.initializeTable()
 	batchTable.rwTableMutex.Lock()

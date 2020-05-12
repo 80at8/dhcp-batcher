@@ -17,7 +17,7 @@ import (
 //
 // responsible for parsing the inbound request URI from client routers.
 //
-// 1- checks request remoteAddr (router IP) against list of allowable devices (see batch_options.go)
+// 1- checks request remoteAddr (router IP) against list of allowable devices (see batch_proxy_options.go)
 // 2- then routes /api/dhcp_assignments and checks parameters and formats.
 // 3- finally applies the appropriate batch command for the desired result: either an expiry or new assignment
 //
@@ -55,7 +55,7 @@ func BatchModeEndpointRouter(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if *batchOptions.batchEndpointUsername == username && *batchOptions.batchEndpointPassword == password {
+		if *batchProxyOptions.batchEndpointUsername == username && *batchProxyOptions.batchEndpointPassword == password {
 
 			q, err := url.ParseQuery(endpointURI.RawQuery)
 
@@ -142,18 +142,13 @@ func BatchModeEndpointRouter(w http.ResponseWriter, r *http.Request) {
 // and will run until stop signal is sent.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func startBatchModeServer() {
+func startBatchModeServer(ctl chan bool) {
 	logger.SetOutput(os.Stderr)
 	logger.Info("starting batcher...")
 
-	// start the scheduler
-	batchTable.initializeTable()
-	batchSchedulerCtl := make(chan bool)
-	go batchTable.RunBatchScheduler(batchSchedulerCtl)
-
 	// load endpoints
 	var TLSConfig tls.Config
-	if *batchOptions.isTLSEnabled {
+	if *batchProxyOptions.isTLSEnabled {
 		TLSConfig = configBatchModeTLS()
 		logger.Info("batcher: TLS + HTTP redirect configuration loaded")
 	} else {
@@ -164,7 +159,7 @@ func startBatchModeServer() {
 	if err != nil {
 		logger.Error("batcher: ", err.Error())
 	} else {
-		if *batchOptions.isTLSEnabled {
+		if *batchProxyOptions.isTLSEnabled {
 			logger.Info("batcher: TLS + HTTP redirect endpoints configured")
 		} else {
 			logger.Info("batcher: HTTP endpoint configured")
@@ -183,7 +178,7 @@ func startBatchModeServer() {
 
 
 	// start endpoints
-	if *batchOptions.isTLSEnabled {
+	if *batchProxyOptions.isTLSEnabled {
 		logger.Info("batcher: starting TLS + HTTP redirect endpoint servers")
 
 		go func() {
@@ -202,7 +197,7 @@ func startBatchModeServer() {
 
 		go func() {
 
-			if err := endpointServer.ListenAndServeTLS(*batchOptions.batchEndpointTLSCert, *batchOptions.batchEndpointTLSKey); err != nil {
+			if err := endpointServer.ListenAndServeTLS(*batchProxyOptions.batchEndpointTLSCert, *batchProxyOptions.batchEndpointTLSKey); err != nil {
 				if err == http.ErrServerClosed {
 					logger.Debug("batcher: TLS endpoint closed")
 					logger.Debug("batcher: ", err.Error())
@@ -240,7 +235,7 @@ func startBatchModeServer() {
 	<-stop
 
 	// true, exit batchScheduler
-	batchSchedulerCtl <- true
+	ctl <- true
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
