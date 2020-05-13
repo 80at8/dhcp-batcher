@@ -21,7 +21,15 @@ the program is a monolithic binary, with two different modes baked in. "batch" m
 
 "proxy" (or relay but it really is proxy) mode functions by intercepting the DHCP protocol request data, siphoning the client data from it and then proxying it upstream to the clients DHCP server(s). The servers respond back to the proxy, which then forwards the DHCP requests back to the router to broadcast to the requesting client.
 
-###pre-requisites
+## features
 
-for "batch" mode, you will typically be running a MikroTik or some other device.
+* baked in TLS 1.2 support in batch mode, including port 80 redirect, secure right off the hop without requiring LetsEncrypt (which you can still use if you like). Generate a self signed cert and you're off to the races.
+* verbose logging, find out why things are batching or aren't quickly. Logging modes include traditional text and JSON formats
+for programmatic parsing.
+* small memory footprint (8.0 MB! for the batcher and proxy), and easy deployment
+* run concurrent instances with different parameters to support multiple proxy subnets etc.
+* proxy works with single interface or multi-interface NICs, improve edge security by running a proxy in front of your production dhcp servers!
+
+
+
 
