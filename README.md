@@ -21,6 +21,8 @@ the program is a monolithic binary, with two different modes baked in. "batch" m
 
 "proxy" (or relay but it really is proxy) mode functions by intercepting the DHCP protocol request data, siphoning the client data from it and then proxying it upstream to the clients DHCP server(s). The servers respond back to the proxy, which then forwards the DHCP requests back to the router to broadcast to the requesting client.
 
+each mode runs a concurrent scheduler which will batch all batch and proxy mode client discoverys to sonar, the timer for the scheduler is adjustable using a program switch.
+
 ## features
 
 * baked in TLS 1.2 support in batch mode, including port 80 redirect, secure right off the hop without requiring LetsEncrypt (which you can still use if you like). Generate a self signed cert and you're off to the races.
@@ -28,7 +30,7 @@ the program is a monolithic binary, with two different modes baked in. "batch" m
 * small memory footprint (8.0 MB! for the batcher and proxy), and easy deployment
 * run concurrent instances with different parameters to support multiple proxy subnets etc.
 * proxy works with single interface or multi-interface NICs, improve edge security by running a proxy in front of your production dhcp servers!
-
+* no conf files to mess with, use command line switches and a shell script, or dockerize it if you like.
 
 
 
