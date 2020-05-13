@@ -48,3 +48,13 @@ from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.0
 
 #### Windows (coming soon!)
 
+## testing
+
+the batcher and proxy haven't been throuroughly tested, so obviously don't use them on a production system -- I still have unit tests to write for the proxy code. I've tested the DHCP DORA proxying over a meraki relay, to the batcher-proxy to the client (Fluke LinkSprinter 200).
+
+Would be nice to test the API endpoints (thx Chris!) for V1 more thorougly, and convert some of the functions to function receivers and interfaces for better unit tests and code coverage.
+
+#usage examples
+
+###### coming soon
+
