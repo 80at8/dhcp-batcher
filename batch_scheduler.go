@@ -13,10 +13,9 @@ import (
 
 type batchID int
 
-
 // Used in
 type Assignment struct {
-	Expired    string   `json:"expired"`
+	Expired    string `json:"expired"`
 	IpAddress  string `json:"ip_address"`
 	MacAddress string `json:"mac_address"`
 	RemoteID   string `json:"remote_id"`
@@ -27,9 +26,9 @@ type recordTable struct {
 	cycleTime     time.Duration
 	sonarInstance string
 	sonarAPIKey   string
-	sonarUser	  string
+	sonarUser     string
 	currentID     batchID
-	skippedID	  batchID
+	skippedID     batchID
 	entry         map[string]Assignment
 }
 
@@ -114,7 +113,7 @@ func (b *recordTable) RunBatchScheduler(ctl chan bool) {
 				b.rwTableMutex.Lock()
 				for k, v := range b.entry {
 					t = append(t, v)
-					delete (b.entry,k)
+					delete(b.entry, k)
 				}
 				b.entry = make(map[string]Assignment)
 				b.rwTableMutex.Unlock()
@@ -127,7 +126,7 @@ func (b *recordTable) RunBatchScheduler(ctl chan bool) {
 
 			} else {
 				b.skippedID++
-				logger.Info("batch scheduler: batch table is empty.. skipping (", b.skippedID,")")
+				logger.Info("batch scheduler: batch table is empty.. skipping (", b.skippedID, ")")
 			}
 		}
 	}
@@ -152,12 +151,11 @@ func sendBatch(t []Assignment) {
 		logger.Println()
 	}
 
-
-	if (*batchProxyOptions.sonarVersion == 1) {
+	if *batchProxyOptions.sonarVersion == 1 {
 
 		client := http.Client{}
 
-		req, err := http.NewRequest("POST", "https://" + *batchProxyOptions.sonarInstanceName +"/api/v1/network/ipam/batch_dynamic_ip_assignment", bytes.NewBuffer(data))
+		req, err := http.NewRequest("POST", "https://"+*batchProxyOptions.sonarInstanceName+"/api/v1/network/ipam/batch_dynamic_ip_assignment", bytes.NewBuffer(data))
 		req.SetBasicAuth(*batchProxyOptions.sonarAPIUsername, *batchProxyOptions.sonarAPIKey)
 		req.Header.Set("Content-Type", "application/json")
 
@@ -185,11 +183,10 @@ func sendBatch(t []Assignment) {
 			logger.Println()
 		}
 
-
 	}
 
 	// add v2 endpoint code here
-	if (*batchProxyOptions.sonarVersion == 2) {
+	if *batchProxyOptions.sonarVersion == 2 {
 
 	}
 
