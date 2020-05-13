@@ -44,7 +44,7 @@ from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.0
     $cd dhcp-batcher
     $sudo mkdir logs
     $sudo mkdir tls
-    $sudo go build`
+    $sudo go build
 
 #### Windows (coming soon!)
 
