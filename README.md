@@ -32,5 +32,18 @@ each mode runs a concurrent scheduler which will batch all batch and proxy mode 
 * proxy works with single interface or multi-interface NICs, improve edge security by running a proxy in front of your production dhcp servers!
 * no conf files to mess with, use command line switches and a shell script, or dockerize it if you like.
 
+## installation
 
+#### Linux
+from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.04 in this example)
+`$sudo apt get install go`
+`$sudo mkdir /opt/sonar/`
+`$cd /opt/sonar/`
+`$sudo git clone https://github.com/80at8/dhcp-batcher`
+`$cd dhcp-batcher`
+`$sudo mkdir logs`
+`$sudo mkdir tls`
+`$sudo go build`
+
+#### Windows (coming soon!)
 
