@@ -32,12 +32,16 @@ func main() {
 
 	case "proxy":
 		logger.Info("dhcp-proxy started")
-		servers := strings.Fields(*batchProxyOptions.dhcpServersIP)
+		servers := strings.Fields(*batchProxyOptions.upstreamServerIPs)
 		for _, s := range servers {
 			dhcpServers = append(dhcpServers, net.ParseIP(s))
 		}
-		dhcpGIAddr = net.ParseIP(*batchProxyOptions.proxyGIAddr)
-		createRelay(*batchProxyOptions.clientFacingInterface, *batchProxyOptions.dhcpFacingInterface,batchSchedulerCtl)
+		proxyServerIP = net.ParseIP(*batchProxyOptions.proxyServerIP)
+		if batchProxyOptions.isProxySingle {
+			createRelay(*batchProxyOptions.proxySingleInterface, *batchProxyOptions.proxySingleInterface, batchSchedulerCtl)
+		} else {
+			createRelay(*batchProxyOptions.proxyUpstreamInterface, *batchProxyOptions.proxyDownstreamInterface, batchSchedulerCtl)
+		}
 
 	default:
 		logger.Info("dhcp-proxy-batcher no switches specified.. exit")

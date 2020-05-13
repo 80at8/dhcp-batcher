@@ -19,10 +19,12 @@ var batchProxyOptions batchConfig
 
 type batchConfig struct {
 	DHCPOperationMode           *string
-	clientFacingInterface       *string
-	dhcpFacingInterface         *string
-	dhcpServersIP               *string
-	proxyGIAddr                 *string
+	isProxySingle               bool
+	proxySingleInterface        *string
+	proxyUpstreamInterface      *string
+	proxyDownstreamInterface    *string
+	upstreamServerIPs           *string
+	proxyServerIP               *string
 	isTLSEnabled                *bool
 	batchEndpointTLSKey         *string
 	batchEndpointTLSCert        *string
@@ -44,10 +46,11 @@ type batchConfig struct {
 
 func initializeBatchProxyConfiguration() {
 	batchProxyOptions.DHCPOperationMode = flag.String("app_mode", "batch", "DHCP operation mode [ batch | proxy ]")
-	batchProxyOptions.clientFacingInterface = flag.String("proxy_in", "eth0", "Interface to listen for DHCPv4/BOOTP queries on")
-	batchProxyOptions.dhcpFacingInterface = flag.String("proxy_out", "eth1", "Outgoing interface for DHCP server")
-	batchProxyOptions.dhcpServersIP = flag.String("proxy_dhcp_ips", "", "IP addresses of the DHCP servers [ IP1 , IP2 ]")
-	batchProxyOptions.proxyGIAddr = flag.String("proxy_giaddr", "", "Required ip address (of outgoing interface and to be used as GIADDR")
+	batchProxyOptions.proxySingleInterface = flag.String("proxy_single_if", "", "Downstream and upstream interface to listen to requests on, if specified disables --proxy_upstream_if and --proxy_downstream_if")
+	batchProxyOptions.proxyUpstreamInterface = flag.String("proxy_upstream_if", "eth0", "Downstream interface to listen for DHCP client requests on")
+	batchProxyOptions.proxyDownstreamInterface = flag.String("proxy_downstream_if", "eth1", "Upstream interface to pass requests to DHCP server(s)")
+	batchProxyOptions.upstreamServerIPs = flag.String("proxy_upstream_dhcp_ips", "", "IP addresses of the DHCP servers [\"a.b.c.d\" || \"a.b.c.d, ..., w.x.y.z\"]")
+	batchProxyOptions.proxyServerIP = flag.String("proxy_server_ip", "", "Proxy server IP address that routers will point to as relay ip (must be bound to Downstream interface)")
 	batchProxyOptions.isTLSEnabled = flag.Bool("batch_use_tls", false, "Enable TLS [ true | false ]")
 	batchProxyOptions.batchEndpointTLSKey = flag.String("batch_tls_key", "/opt/sonar/dhcp-batcher/tls/dhcp-batcher.key", "Path to TLS private key")
 	batchProxyOptions.batchEndpointTLSCert = flag.String("batch_tls_cert", "/opt/sonar/dhcp-batcher/tls/dhcp-batcher.crt", "Path to TLS public certificate")
@@ -109,18 +112,24 @@ func checkBatchProxyConfiguration() error {
 
 	if *batchProxyOptions.DHCPOperationMode == "proxy" {
 
-		if x := net.ParseIP(*batchProxyOptions.proxyGIAddr); x == nil{
-			return errors.New("(--proxy_giaddr) unable to parse proxy gateway IP")
+		if *batchProxyOptions.proxySingleInterface != "" {
+			*batchProxyOptions.proxyDownstreamInterface = ""
+			*batchProxyOptions.proxyUpstreamInterface = ""
+			batchProxyOptions.isProxySingle = true
 		}
 
-		servers := strings.Fields(*batchProxyOptions.dhcpServersIP)
+		if x := net.ParseIP(*batchProxyOptions.proxyServerIP); x == nil {
+			return errors.New("(--proxy_server_ip) unable to parse proxy server IP")
+		}
+
+		servers := strings.Fields(*batchProxyOptions.upstreamServerIPs)
 		if servers == nil {
-			return errors.New("(--proxy_dhcp_ips) you need to specify the IP's of the dhcp servers to proxy requests to")
+			return errors.New("(--proxy_upstream_dhcp_ips) you need to specify the IP's of the dhcp servers to proxy requests to")
 		}
 
 		for _, s := range servers {
 			if x := net.ParseIP(s); x == nil {
-				return errors.New("(--proxy_dhcp_ips) unable to parse dhcp server IP's")
+				return errors.New("(--proxy_upstream_dhcp_ips) unable to parse dhcp server IP's")
 			}
 
 		}
@@ -154,7 +163,6 @@ func checkBatchProxyConfiguration() error {
 	if *batchProxyOptions.sonarInstanceName == "" {
 		return errors.New("(--sonar_instance) you're instance FQDN can't be blank")
 	}
-
 
 	return nil
 }
