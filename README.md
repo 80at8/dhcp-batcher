@@ -1,5 +1,5 @@
 # sonar dhcp-batcher w/ integrated relay and proxy.
-![written in Go!](https://github.com/80at8/dhcp-batcher/assets/netgopher.svg)
+![written in Go!](https://github.com/80at8/dhcp-batcher/blob/master/assets/netgopher.svg)
 
 (not for production use, poc only!).
 
