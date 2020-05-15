@@ -56,7 +56,80 @@ the batcher and proxy haven't been throuroughly tested, so obviously don't use t
 
 Would be nice to test the API endpoints (thx Chris!) for V1 more thorougly, and convert some of the functions to function receivers and interfaces for better unit tests and code coverage.
 
-#usage examples
+## usage flags
 
-###### coming soon
+run
 
+    ./dhcp-batcher --help
+to access the help w/ flag usage, the flags are covered in more detail below.
+
+    -app_mode string
+    	DHCP operation mode [ batch | proxy ] (default "batch")
+sets the programs operation mode, either batch mode or proxy mode -- each mode uploads it's batched or discovered items to sonar.
+ 
+    -batch_cycle_time int
+    	Batch scheduler cycle time (in minutes), set to 0 to enable near-realtime batching (15 seconds) (default 5)
+sets the batch cycle time in minutes, this is the interval that batched and proxy-discovered items are sent to sonar.
+
+    -batch_http_port string
+    	HTTP port to listen for dhcp batcher requests on, or redirect to TLS (default "80")
+this is the port where the batch endpoint resides, when using TLS this option is overriden and port 80 is used as a redirect to TLS / port 443       
+
+    -batch_ip string
+    	Local IP to bind DHCP batching requests to (default "127.0.0.1")
+the ip address that the batch endpoint will listen on.
+
+    -batch_logging_format string
+    	Batch endpoint logging format [ text | json ] (default "text")
+this sets the format for the logging output, text is human redable, or JSON for something that can be parsed programmatically
+  
+    -batch_logging_mode string
+    	Batch endpoint logging Level [ none | info | warn | debug ] (default "info")
+the level of logging detail to record in the log
+
+    -batch_logging_path string
+    	Batch endpoint logging output [ path | "console"] (default "/opt/sonar/dhcp-batcher/logs/dhcpbatcher.log")
+where to send the logging output, use a path to write to a file or use console to run batcher in interactive mode.
+
+    -batch_password string      Password for batch endpoint authentication (minimum 16 characters)
+    -batch_username string   	Username for batch endpoint authentication (minimum 5 characters)
+the username and password for the batch endpoint (not the sonar instance!) -- this allows you to secure the endpoint with basic auth so that only authorized routers can create batch entries.
+
+     -batch_tls_cert string
+path to TLS public certificate (default "/opt/sonar/dhcp-batcher/tls/dhcp-batcher.crt")
+        
+    -batch_tls_key string
+path to TLS private key (default "/opt/sonar/dhcp-batcher/tls/dhcp-batcher.key")
+    
+    -batch_tls_port string
+TLS port to listen for dhcp batcher requests on (default "443")
+
+    -batch_use_tls string
+enable TLS, set to [true || 1] || [false || 0]
+        
+    -proxy_downstream_if string
+downstream interface to listen for DHCP client requests on (default "eth1")
+
+    -proxy_upstream_if string
+upstream interface to pass requests to DHCP server(s) (default "eth0")
+
+    -proxy_single_if string
+downstream and upstream interface to listen to requests on, if specified disables --proxy_upstream_if and   
+
+    -proxy_server_ip string
+proxy server IP address that routers will point to as relay ip (must be bound to downstream interface)
+
+    -proxy_upstream_dhcp_ips string
+IP addresses of the DHCP servers ["a.b.c.d" || "a.b.c.d, ..., w.x.y.z"]
+
+    -sonar_api_key string
+v1 sonar password or v2 sonar bearer token
+
+    -sonar_api_username string
+v1 sonar username
+
+    -sonar_instance string
+v1 or v2 sonar instance name (use FQDN e.g: example.sonar.software)
+  
+    -sonar_version int
+sonar version batcher will report to, [ 1 | 2 ] (default 2)
