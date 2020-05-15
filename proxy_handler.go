@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 )
 
@@ -165,10 +166,21 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 	return nil
 }
 
-func createRelay(in, out string, ctl chan bool) {
+func startDHCPProxy(ctl chan bool) {
+	servers := strings.Fields(*batchProxyOptions.upstreamServerIPs)
+	for _, s := range servers {
+		dhcpServers = append(dhcpServers, net.ParseIP(s))
+	}
+	proxyServerIP = net.ParseIP(*batchProxyOptions.proxyServerIP)
 	handler := &DHCPHandler{m: make(map[string]bool)}
-	go ListenAndServeIf(in, out, 67, handler)
-	go ListenAndServeIf(out, in, 68, handler)
+
+	if batchProxyOptions.isProxySingle {
+		go ListenAndServeIf(*batchProxyOptions.proxySingleInterface, *batchProxyOptions.proxySingleInterface, 67, handler)
+		go ListenAndServeIf(*batchProxyOptions.proxySingleInterface, *batchProxyOptions.proxySingleInterface, 68, handler)
+	} else {
+		go ListenAndServeIf(*batchProxyOptions.proxyUpstreamInterface, *batchProxyOptions.proxyDownstreamInterface, 67, handler)
+		go ListenAndServeIf(*batchProxyOptions.proxyDownstreamInterface, *batchProxyOptions.proxyUpstreamInterface, 68, handler)
+	}
 
 	// listen for stop signals
 	stop := make(chan os.Signal, 1)
@@ -182,6 +194,7 @@ func createRelay(in, out string, ctl chan bool) {
 	_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	logger.Println()
 	logger.Info("proxy: exit..")
 	return
 

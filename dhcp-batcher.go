@@ -6,8 +6,6 @@ package main
 
 import (
 	"fmt"
-	"net"
-	"strings"
 )
 
 func main() {
@@ -25,29 +23,19 @@ func main() {
 
 	// start the scheduler
 	batchTable.initializeTable()
-	batchSchedulerCtl := make(chan bool)
-	go batchTable.RunBatchScheduler(batchSchedulerCtl)
+	batcherSchedulerSignal := make(chan bool)
+	go batchTable.RunBatchScheduler(batcherSchedulerSignal)
 
 
 	switch *batchProxyOptions.DHCPOperationMode {
 	case "batch":
 		logger.Info("dhcp-batcher started")
-		startBatchModeServer(batchSchedulerCtl)
-
+		startBatchModeServer(batcherSchedulerSignal)
 	case "proxy":
 		logger.Info("dhcp-proxy started")
-		servers := strings.Fields(*batchProxyOptions.upstreamServerIPs)
-		for _, s := range servers {
-			dhcpServers = append(dhcpServers, net.ParseIP(s))
-		}
-		proxyServerIP = net.ParseIP(*batchProxyOptions.proxyServerIP)
-		if batchProxyOptions.isProxySingle {
-			createRelay(*batchProxyOptions.proxySingleInterface, *batchProxyOptions.proxySingleInterface, batchSchedulerCtl)
-		} else {
-			createRelay(*batchProxyOptions.proxyUpstreamInterface, *batchProxyOptions.proxyDownstreamInterface, batchSchedulerCtl)
-		}
-
+		startDHCPProxy(batcherSchedulerSignal)
 	default:
 		logger.Info("dhcp-proxy-batcher no switches specified.. exit")
 	}
+	return
 }

@@ -248,6 +248,7 @@ func startBatchModeServer(ctl chan bool) {
 		logger.Error("batcher: ", err.Error())
 	}
 
+	logger.Println()
 	logger.Info("batcher: exit..")
 	return
 }
