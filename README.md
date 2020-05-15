@@ -17,7 +17,9 @@ this program batches DHCP client requests to Sonar V1 instances, and, after some
 why not?
 
 ## how does it work
-the program is a monolithic binary, with two different modes baked in. "batch" mode works like the traditional sonar batcher, where a script on a router hits a rest endpoint on the batcher, which then adds (or removes) client entries and schedules them for batching.
+the program is a monolithic binary, with two different modes baked in.
+
+"batch" mode works like the traditional sonar batcher, where a script on a router hits a rest endpoint on the batcher, which then adds (or removes) client entries and schedules them for batching.
 
 ![batching topology](https://github.com/80at8/dhcp-batcher/blob/master/assets/Screenshot%20from%202020-05-15%2014-31-31.png)
 
@@ -25,7 +27,7 @@ the program is a monolithic binary, with two different modes baked in. "batch" m
 
 ![proxying topology](https://github.com/80at8/dhcp-batcher/blob/master/assets/Screenshot%20from%202020-05-15%2014-25-23.png)
 
-each mode runs a concurrent scheduler which will batch all batch and proxy mode client discoverys to sonar, the timer for the scheduler is adjustable using a program switch.
+each mode runs a concurrent scheduler which will batch all discovered clients to sonar, the timer for the scheduler is adjustable using the --batch_cycle_time switch.
 
 ## features
 
