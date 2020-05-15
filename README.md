@@ -19,7 +19,11 @@ why not?
 ## how does it work
 the program is a monolithic binary, with two different modes baked in. "batch" mode works like the traditional sonar batcher, where a script on a router hits a rest endpoint on the batcher, which then adds (or removes) client entries and schedules them for batching.
 
+![batching topology](https://github.com/80at8/dhcp-batcher/blob/master/assets/Screenshot%20from%202020-05-15%2014-31-31.png)
+
 "proxy" (or relay but it really is proxy) mode functions by intercepting the DHCP protocol request data, siphoning the client data from it and then proxying it upstream to the clients DHCP server(s). The servers respond back to the proxy, which then forwards the DHCP requests back to the router to broadcast to the requesting client.
+
+![proxying topology](https://github.com/80at8/dhcp-batcher/blob/master/assets/Screenshot%20from%202020-05-15%2014-25-23.png)
 
 each mode runs a concurrent scheduler which will batch all batch and proxy mode client discoverys to sonar, the timer for the scheduler is adjustable using a program switch.
 
