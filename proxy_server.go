@@ -90,7 +90,10 @@ func Serve(conn *serveIfConn, handler dhcp.Handler) error {
 			if res.OpCode() == 1 {
 				logger.Debug("upstream, writing to dhcp server as client (using source port 68 (bootpc))")
 				for _, ip := range dhcpServers {
-					conn.WriteTo(res, &net.UDPAddr{IP: ip, Port: 67}, proxyServerIP, conn.otherIndex)
+					_, err= conn.WriteTo(res, &net.UDPAddr{IP: ip, Port: 67}, proxyServerIP, conn.otherIndex)
+					if err != nil {
+						logger.Error(err)
+					}
 				}
 			} else {
 				logger.Debug("downstream, writing to client as dhcp server (using source port 67 (bootps))")

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/binary"
 	dhcp "github.com/krolaw/dhcp4"
 	"net"
 	"os"
@@ -12,35 +13,20 @@ import (
 
 var dhcpServers []net.IP
 var proxyServerIP net.IP
-var downStreamGIAddr net.IP
 
 type DHCPHandler struct {
 	m map[string]bool
 }
 
-func proxyGIAddrLookup() {
-
-}
-
-
-func addProxyGIAddr() {
-
-}
-
-
-
 func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options dhcp.Options) (d dhcp.Packet) {
 	switch msgType {
-		//CIADDR (Client IP address)
-		//YIADDR (Your IP address)
-		//SIADDR (Server IP address)
-		//GIADDR (Gateway IP address)
-		//CHADDR (Client hardware address)
+	//CIADDR (Client IP address)
+	//YIADDR (Your IP address)
+	//SIADDR (Server IP address)
+	//GIADDR (Gateway IP address)
+	//CHADDR (Client hardware address)
 	case dhcp.Discover:
-		logger.Info("DISCOVER ", p.YIAddr(), " from ", p.CHAddr())
-		logger.Debug("giaddr is  ",p.GIAddr())
-		logger.Debug("flags are " , p.Flags())
-		downStreamGIAddr = p.GIAddr()
+		logger.Debug("DISCOVER ", p.YIAddr(), " from ", p.CHAddr())
 		h.m[string(p.XId())] = true
 		p2 := dhcp.NewPacket(dhcp.BootRequest)
 		p2.SetCHAddr(p.CHAddr())
@@ -53,37 +39,29 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		return p2
 
 	case dhcp.Offer:
+		logger.Debug("OFFER")
 		if !h.m[string(p.XId())] {
 			return nil
 		}
-		var sip net.IP
-		for k, v := range p.ParseOptions() {
-			if k == dhcp.OptionServerIdentifier {
-				sip = v
-			}
-		}
-		logger.Info("OFFER from ", sip.String()," ", p.YIAddr(), " to ", p.CHAddr())
-		logger.Debug("giaddr is  ",p.GIAddr())
-		logger.Debug("flags are " , p.Flags())
 		p2 := dhcp.NewPacket(dhcp.BootReply)
 		p2.SetXId(p.XId())
 		p2.SetFile(p.File())
 		p2.SetFlags(p.Flags())
 		p2.SetYIAddr(p.YIAddr())
-	    p2.SetGIAddr(p.GIAddr())
-	    p2.SetSIAddr(p.SIAddr())
+		p2.SetGIAddr(p.GIAddr())
+		p2.SetSIAddr(p.SIAddr())
 		p2.SetCHAddr(p.CHAddr())
 		p2.SetSecs(p.Secs())
 		for k, v := range p.ParseOptions() {
 			p2.AddOption(k, v)
 		}
+		p2.AddOption(dhcp.OptionServerIdentifier, []byte(proxyServerIP.To4()))
+
 		return p2
 
 	case dhcp.Request:
 		h.m[string(p.XId())] = true
-		logger.Info("REQUEST ", p.YIAddr(), " from ", p.CHAddr())
-		logger.Debug("giaddr is  ",proxyServerIP)
-		logger.Debug("flags are " , p.Flags())
+		logger.Info("REQUEST ", p.CIAddr(), " from ", p.CHAddr())
 		p2 := dhcp.NewPacket(dhcp.BootRequest)
 		p2.SetCHAddr(p.CHAddr())
 		p2.SetFile(p.File())
@@ -102,14 +80,17 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			return nil
 		}
 		var sip net.IP
-		for k, v := range p.ParseOptions() {
-			if k == dhcp.OptionServerIdentifier {
-				sip = v
-			}
+		logger.Debug("ACK")
+		options := p.ParseOptions()
+		if v := options[dhcp.OptionServerIdentifier]; v != nil {
+			sip = v
 		}
-		logger.Info("ACK from ", sip.String()," ",p.YIAddr(), " to ", p.CHAddr())
-		logger.Debug("giaddr is  ",p.GIAddr())
-		logger.Debug("flags are " , p.Flags())
+		if v := options[dhcp.OptionIPAddressLeaseTime]; v != nil {
+			leaseTable.addLease(p.CHAddr(), p.YIAddr(), p.GIAddr(), v)
+			logger.Debug("    LEASELOCK - hwaddr: ", p.CHAddr(), ", lease time(s):   ", binary.BigEndian.Uint32(v))
+		}
+
+		logger.Info("    DHCP SERVER:  ", sip.String(), " assigns ", p.YIAddr(), " to ", p.CHAddr())
 		p2 := dhcp.NewPacket(dhcp.BootReply)
 		p2.SetXId(p.XId())
 		p2.SetFile(p.File())
@@ -122,17 +103,17 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		for k, v := range p.ParseOptions() {
 			p2.AddOption(k, v)
 		}
-
-		go batchTable.UpdateBatchTable("0", downStreamGIAddr, p.CHAddr(), p.YIAddr(), "")  // active
+		p2.AddOption(dhcp.OptionServerIdentifier, []byte(proxyServerIP.To4()))
+		//batchTable.UpdateBatchTable("0", downStreamGIAddr, p.CHAddr(), p.YIAddr(), "") // active
 		return p2
 
 	case dhcp.NAK:
 		if !h.m[string(p.XId())] {
 			return nil
 		}
-		logger.Info("NAK from ", p.SIAddr()," ", p.YIAddr(), " to ", p.CHAddr())
-		logger.Debug("giaddr is  ",p.GIAddr())
-		logger.Debug("flags are " , p.Flags())
+		logger.Info("NAK from ", p.SIAddr(), " ", p.YIAddr(), " to ", p.CHAddr())
+		logger.Debug("giaddr is  ", p.GIAddr())
+		logger.Debug("flags are ", p.Flags())
 		p2 := dhcp.NewPacket(dhcp.BootReply)
 		p2.SetXId(p.XId())
 		p2.SetFile(p.File())
@@ -143,9 +124,13 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		p2.SetCHAddr(p.CHAddr())
 		p2.SetSecs(p.Secs())
 		for k, v := range p.ParseOptions() {
-			p2.AddOption(k, v)
+			if k == dhcp.OptionServerIdentifier {
+				p2.AddOption(k, []byte(proxyServerIP.To4()))
+			} else {
+				p2.AddOption(k, v)
+			}
 		}
-		go batchTable.UpdateBatchTable("1", downStreamGIAddr, p.CHAddr(), p.YIAddr(),  "") // expired
+		//		go batchTable.UpdateBatchTable("1", downStreamGIAddr, p.CHAddr(), p.YIAddr(),  "") // expired
 		return p2
 
 	case dhcp.Release, dhcp.Decline:
@@ -160,13 +145,15 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		for k, v := range p.ParseOptions() {
 			p2.AddOption(k, v)
 		}
-		go batchTable.UpdateBatchTable("1", downStreamGIAddr, p.CHAddr(), p.YIAddr(),  "") // expired
+		//	go batchTable.UpdateBatchTable("1", downStreamGIAddr, p.CHAddr(), p.YIAddr(),  "") // expired
 		return p2
 	}
 	return nil
 }
 
 func startDHCPProxy(ctl chan bool) {
+	// init lease table
+	leaseTable.init()
 	servers := strings.Fields(*batchProxyOptions.upstreamServerIPs)
 	for _, s := range servers {
 		dhcpServers = append(dhcpServers, net.ParseIP(s))
