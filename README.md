@@ -60,6 +60,8 @@ from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.0
 
 the batcher and proxy haven't been throuroughly tested, so obviously don't use them on a production system -- I still have unit tests to write for the proxy code. I've tested the DHCP DORA proxying over a meraki relay, to the batcher-proxy to the client (Fluke LinkSprinter 200).
 
+update: throughput testing has been completed using perfdhcp, no packet drops at 1000 DHCP Discover / Offer requests / sec. 30% packet drop at > 1000 DHCP Discover / Offer requests sec. Using a locked map might be the reason the performance is slow, but it should be usable for most networks where subnets have 3k to 6k clients.
+
 Would be nice to test the API endpoints (thx Chris!) for V1 more thorougly, and convert some of the functions to function receivers and interfaces for better unit tests and code coverage.
 
 ## usage flags
@@ -139,3 +141,7 @@ v1 or v2 sonar instance name (use FQDN e.g: example.sonar.software)
   
     -sonar_version int
 sonar version batcher will report to, [ 1 | 2 ] (default 2)
+
+##basic command example##
+
+```sudo ./dhcp-batcher -app_mode proxy --proxy_upstream_dhcp_ips DHCPSERVER_IP1,DHCPSERVER_IP2 --proxy_server_ip VMSERVER_IP -proxy_single_if INTERFACENAME --batch_logging_path console --batch_logging_mode debug --sonar_api_username SONAR_USERNAME --sonar_instance SONAR_INSTANCE --sonar_api_key SONAR_API```
