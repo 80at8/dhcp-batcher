@@ -104,29 +104,56 @@ func (b *recordTable) RunBatchScheduler(ctl chan bool) {
 		case <-t.C:
 			logger.Info("scheduler: running scheduled batch, batch number is ", b.currentID)
 
-			if len(b.entry) > 0 {
-				var t []Assignment
+			var t []Assignment
 
-				// map operations aren't thread safe -- put any map changes within the mutex locks to avoid read/write
-				// race conditions
+			if *batchProxyOptions.DHCPOperationMode == "proxy" {
+				if len(leaseTable.entry) > 0 {
 
-				b.rwTableMutex.Lock()
-				for k, v := range b.entry {
-					t = append(t, v)
-					delete(b.entry, k)
+					logger.Info("scheduler: mode is proxy")
+					leaseTable.mutex.Lock()
+					for _, v := range leaseTable.entry {
+						x := Assignment{
+							Expired:    v.isExpired,
+							IpAddress:  v.ip,
+							MacAddress: v.mac,
+							RemoteID:   v.rid,
+						}
+						t = append(t, x)
+						//delete(leaseTable.entry, k)
+					}
+					//leaseTable.entry = make(map[string]lease)
+					leaseTable.mutex.Unlock()
+
+					b.currentID++
+					go sendBatch(t)
+				} else {
+					b.skippedID++
+					logger.Info("batch scheduler: proxy table is empty.. skipping (", b.skippedID, ")")
 				}
-				b.entry = make(map[string]Assignment)
-				b.rwTableMutex.Unlock()
-
-				// increment the batch number as the batch table is now cleared
-				b.currentID++
-
-				// send it off to sonar!
-				go sendBatch(t)
-
 			} else {
-				b.skippedID++
-				logger.Info("batch scheduler: batch table is empty.. skipping (", b.skippedID, ")")
+				if len(b.entry) > 0 {
+
+					logger.Info("scheduler: mode is batch")
+					// map operations aren't thread safe -- put any map changes within the mutex locks to avoid read/write
+					// race conditions
+
+					b.rwTableMutex.Lock()
+					for k, v := range b.entry {
+						t = append(t, v)
+						delete(b.entry, k)
+					}
+					b.entry = make(map[string]Assignment)
+					b.rwTableMutex.Unlock()
+
+					// increment the batch number as the batch table is now cleared
+					b.currentID++
+
+					// send it off to sonar!
+					go sendBatch(t)
+				} else {
+					b.skippedID++
+					logger.Info("batch scheduler: batch table is empty.. skipping (", b.skippedID, ")")
+				}
 			}
 		}
 	}
@@ -156,6 +183,11 @@ func sendBatch(t []Assignment) {
 		client := http.Client{}
 
 		req, err := http.NewRequest("POST", "https://"+*batchProxyOptions.sonarInstanceName+"/api/v1/network/ipam/batch_dynamic_ip_assignment", bytes.NewBuffer(data))
+		if err != nil {
+			logger.Error("error posting to sonar instance ", *batchProxyOptions.sonarInstanceName)
+			logger.Error(err.Error())
+		}
+
 		req.SetBasicAuth(*batchProxyOptions.sonarAPIUsername, *batchProxyOptions.sonarAPIKey)
 		req.Header.Set("Content-Type", "application/json")
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/binary"
 	dhcp "github.com/krolaw/dhcp4"
 	"net"
 	"os"
@@ -190,7 +191,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			return nil
 		}
 		logger.Debug("ACK")
-		leaseTable.addLease(p.CHAddr().String(), p.YIAddr().String(), packetOptions)
+		leaseTable.addLease(p.CHAddr().String(), p.YIAddr().String(),binary.BigEndian.Uint32(options[dhcp.OptionIPAddressLeaseTime]), packetOptions)
 		p2 := dhcp.NewPacket(dhcp.BootReply)
 		p2.SetXId(p.XId())
 		p2.SetFile(p.File())
@@ -253,6 +254,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 
 func startDHCPProxy(ctl chan bool) {
 	leaseTable.init()
+	go leaseTable.trim(ctl)
 	servers := strings.Fields(*batchProxyOptions.upstreamServerIPs)
 	for _, s := range servers {
 		dhcpServers = append(dhcpServers, net.ParseIP(s))
