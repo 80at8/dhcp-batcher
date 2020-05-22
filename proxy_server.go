@@ -25,7 +25,7 @@ func (s *serveIfConn) ReadFrom(b []byte) (n int, addr net.Addr, err error) {
 }
 
 func (s *serveIfConn) WriteTo(b []byte, addr net.Addr, src net.IP, index int) (n int, err error) {
-	logger.Debug("writing with source ", src, " ", index)
+	//logger.Debug("writing with source ", src, " ", index)
 	s.cm.Src = src
 	s.cm.IfIndex = index
 	return s.conn.WriteTo(b, s.cm, addr)
@@ -88,7 +88,7 @@ func Serve(conn *serveIfConn, handler dhcp.Handler) error {
 		}
 		if res := handler.ServeDHCP(req, reqType, options); res != nil {
 			if res.OpCode() == 1 {
-				logger.Debug("upstream, writing to dhcp server as client (using source port 68 (bootpc))")
+				//logger.Debug("upstream, writing to dhcp server as client (using source port 68 (bootpc))")
 				for _, ip := range dhcpServers {
 					_, err= conn.WriteTo(res, &net.UDPAddr{IP: ip, Port: 67}, proxyServerIP, conn.otherIndex)
 					if err != nil {
@@ -96,10 +96,18 @@ func Serve(conn *serveIfConn, handler dhcp.Handler) error {
 					}
 				}
 			} else {
-				logger.Debug("downstream, writing to client as dhcp server (using source port 67 (bootps))")
-				_, err = conn.WriteTo(res, &net.UDPAddr{IP: net.ParseIP("192.168.50.1"), Port: 67}, proxyServerIP, conn.ifIndex)
-				if err != nil {
-					logger.Error(err)
+				//logger.Debug("downstream, writing to client as dhcp server (using source port 67 (bootps))")
+				//_, err = conn.WriteTo(res, &net.UDPAddr{IP: net.ParseIP("192.168.50.1"), Port: 67}, proxyServerIP, conn.ifIndex)
+
+				opt := res.ParseOptions()
+				o := string(opt[dhcp.OptionRouter])
+				if len(o) == 4 {
+					_, err = conn.WriteTo(res, &net.UDPAddr{IP: net.IPv4(byte(o[0]), byte(o[1]), byte(o[2]), byte(o[3])), Port: 67}, proxyServerIP, conn.ifIndex)
+					if err != nil {
+						logger.Error(err)
+					}
+				} else {
+					logger.Error("invalid send address ", o)
 				}
 			}
 		}
