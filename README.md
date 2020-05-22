@@ -43,16 +43,16 @@ each mode runs a concurrent scheduler which will batch all discovered clients to
 #### Linux
 from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.04 in this example)
 
-    $sudo apt get install go
-    $sudo mkdir /opt/sonar/
-    $cd /opt/sonar/
-    $sudo git clone https://github.com/80at8/dhcp-batcher
-    $cd dhcp-batcher
-    $sudo mkdir logs
-    $sudo mkdir tls
-    $sudo chown -R <yourusername>:<yourusername> /opt/sonar/
-    $go get .
-    $go build
+    sudo apt get install go
+    sudo mkdir /opt/sonar/
+    cd /opt/sonar/
+    sudo git clone https://github.com/80at8/dhcp-batcher
+    cd dhcp-batcher
+    sudo mkdir logs
+    sudo mkdir tls
+    sudo chown -R <yourusername>:<yourusername> /opt/sonar/
+    go get .
+    go build
 
 #### Windows (coming soon!)
 
