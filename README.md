@@ -62,7 +62,21 @@ the batcher and proxy haven't been throuroughly tested, so obviously don't use t
 
 update: throughput testing has been completed using perfdhcp, no packet drops at 1000 DHCP Discover / Offer requests / sec. 30% packet drop at > 1000 DHCP Discover / Offer requests sec. Using a locked map might be the reason the performance is slow, but it should be usable for most networks where subnets have 3k to 6k clients.
 
+Here are the numbers from perfdhcp:
+
+100/SEC
+
+    ISC Rate: 47.7622 4-way exchanges/second, expected rate: 100
+    PROXY Rate: 47.4405 4-way exchanges/second, expected rate: 100
+    
+1000/SEC
+
+    ISC Rate 388.77 4-way exchanges/second, expected rate: 1000
+    PROXY Rate: 290.86 4-way exchanges/second, expected rate: 1000
+
 Would be nice to test the API endpoints (thx Chris!) for V1 more thorougly, and convert some of the functions to function receivers and interfaces for better unit tests and code coverage.
+
+
 
 ## usage flags
 
@@ -142,6 +156,6 @@ v1 or v2 sonar instance name (use FQDN e.g: example.sonar.software)
     -sonar_version int
 sonar version batcher will report to, [ 1 | 2 ] (default 2)
 
-##basic command example##
+## basic command example
 
 ```sudo ./dhcp-batcher -app_mode proxy --proxy_upstream_dhcp_ips DHCPSERVER_IP1,DHCPSERVER_IP2 --proxy_server_ip VMSERVER_IP -proxy_single_if INTERFACENAME --batch_logging_path console --batch_logging_mode debug --sonar_api_username SONAR_USERNAME --sonar_instance SONAR_INSTANCE --sonar_api_key SONAR_API```
