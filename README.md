@@ -38,6 +38,28 @@ each mode runs a concurrent scheduler which will batch all discovered clients to
 * proxy works with single interface or multi-interface NICs, improve edge security by running a proxy in front of your production dhcp servers!
 * no conf files to mess with, use command line switches and a shell script, or dockerize it if you like.
 
+## system requirements (batcher)
+
+Requests/Second: NA
+    OS: Ubuntu 18.04
+    Memory: 2 GB RAM
+    CPU: 1 core
+
+## system requirements (proxy)
+
+Requests/Second: 10-20 - 30-40% CPU load
+    OS: Ubuntu 18.04
+    Memory: 2 GB RAM
+    CPU: 1 core
+    DHCP: 1 upstream DHCP server (2 is always better though)
+
+Requests/Second: 20-50 - 40-60% CPU load
+    OS: Ubuntu 18.04
+    Memory: 2 GB RAM
+    CPU: 2 core
+    DHCP: 2 upstream DHCP servers (3 is always better though)
+
+
 ## installation
 
 #### Linux
