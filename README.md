@@ -60,7 +60,7 @@ from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.0
 
 the batcher and proxy haven't been throuroughly tested, so obviously don't use them on a production system -- I still have unit tests to write for the proxy code. I've tested the DHCP DORA proxying over a meraki relay, to the batcher-proxy to the client (Fluke LinkSprinter 200).
 
-update: throughput testing has been completed using perfdhcp, no packet drops at 1000 DHCP Discover / Offer requests / sec. 30% packet drop at > 1000 DHCP Discover / Offer requests sec. Using a locked map might be the reason the performance is slow, but it should be usable for most networks where subnets have aggregate request traffic of 10 to 200 requests per second with two upstream dhcp servers.
+update: throughput testing has been completed using perfdhcp, it should be quite performant for most networks where subnets have aggregate request traffic of 10 to 50 requests per second with one or two upstream dhcp servers, for more requests per second more dhcp servers and proxies should be used.
 
 Here are the numbers from perfdhcp:
 
