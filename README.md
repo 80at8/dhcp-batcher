@@ -41,6 +41,7 @@ each mode runs a concurrent scheduler which will batch all discovered clients to
 ## system requirements (batcher)
 
 Requests/Second: NA
+
     OS: Ubuntu 18.04
     Memory: 2 GB RAM
     CPU: 1 core
@@ -48,12 +49,14 @@ Requests/Second: NA
 ## system requirements (proxy)
 
 Requests/Second: 10-20 - 30-40% CPU load
+
     OS: Ubuntu 18.04
     Memory: 2 GB RAM
     CPU: 1 core
     DHCP: 1 upstream DHCP server (2 is always better though)
 
 Requests/Second: 20-50 - 40-60% CPU load
+
     OS: Ubuntu 18.04
     Memory: 2 GB RAM
     CPU: 2 core
