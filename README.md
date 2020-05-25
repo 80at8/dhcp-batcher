@@ -1,6 +1,5 @@
-# sonar dhcp-batcher w/ integrated proxy.
 ![written in Go!](https://github.com/80at8/dhcp-batcher/blob/master/assets/sonarproxybatcher.png)
-
+# sonar dhcp-batcher w/ integrated proxy (proxybatcher)
 (not for production use, poc only!).
 
 todo
