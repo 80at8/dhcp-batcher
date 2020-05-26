@@ -182,4 +182,4 @@ sonar version batcher will report to, [ 1 | 2 ] (default 2)
 
 ## basic command example
 
-```sudo ./dhcp-batcher -app_mode proxy --proxy_upstream_dhcp_ips DHCPSERVER_IP1,DHCPSERVER_IP2 --proxy_server_ip VMSERVER_IP -proxy_single_if INTERFACENAME --batch_logging_path console --batch_logging_mode debug --sonar_api_username SONAR_USERNAME --sonar_instance SONAR_INSTANCE --sonar_api_key SONAR_API```
+```sudo ./proxybatcher -app_mode proxy --proxy_upstream_dhcp_ips DHCPSERVER_IP1,DHCPSERVER_IP2 --proxy_server_ip VMSERVER_IP -proxy_single_if INTERFACENAME --batch_logging_path console --batch_logging_mode debug --sonar_api_username SONAR_USERNAME --sonar_instance SONAR_INSTANCE --sonar_api_key SONAR_API```
