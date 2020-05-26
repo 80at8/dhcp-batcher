@@ -70,7 +70,7 @@ from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.0
     sudo apt get install golang-go
     sudo mkdir /opt/sonar/
     cd /opt/sonar/
-    sudo git clone https://github.com/80at8/dhcp-batcher
+    sudo git clone https://github.com/80at8/proxybatcher
     cd dhcp-batcher
     sudo mkdir logs
     sudo mkdir tls
