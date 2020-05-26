@@ -67,7 +67,7 @@ Requests/Second: 20-50 - 40-60% CPU load
 #### Linux
 from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.04 in this example)
 
-    sudo apt get install go
+    sudo apt get install golang-go
     sudo mkdir /opt/sonar/
     cd /opt/sonar/
     sudo git clone https://github.com/80at8/dhcp-batcher
