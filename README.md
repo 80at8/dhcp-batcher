@@ -183,3 +183,8 @@ sonar version batcher will report to, [ 1 | 2 ] (default 2)
 ## basic command example
 
 ```sudo ./proxybatcher -app_mode proxy --proxy_upstream_dhcp_ips DHCPSERVER_IP1,DHCPSERVER_IP2 --proxy_server_ip VMSERVER_IP -proxy_single_if INTERFACENAME --batch_logging_path console --batch_logging_mode debug --sonar_api_username SONAR_USERNAME --sonar_instance SONAR_INSTANCE --sonar_api_key SONAR_API```
+
+
+## optimizations to do
+
+I think (i need to profile this) the packet handling code might be faster if I do a quick deep copy of the inbound packet to the created proxied packet, then replaced giaddr on the request packets and immediately throw the packet thru a channel.. then send inbound D\O packet through another channel that builds the lease table.
