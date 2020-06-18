@@ -37,6 +37,10 @@ each mode runs a concurrent scheduler which will batch all discovered clients to
 * proxy works with single interface or multi-interface NICs, improve edge security by running a proxy in front of your production dhcp servers!
 * no conf files to mess with, use command line switches and a shell script, or dockerize it if you like.
 
+## todo
+* ok, a conf file is needed -- I put too much stuff as flags.. will look at integrating https://github.com/spf13/viper
+* web ui for management (or make a cli tool to generate script configs .. or a cool cli config wizard would be fun)
+
 ## system requirements (batcher)
 
 Requests/Second: NA
