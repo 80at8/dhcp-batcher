@@ -75,7 +75,7 @@ from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.0
     sudo mkdir /opt/sonar/
     cd /opt/sonar/
     sudo git clone https://github.com/80at8/proxybatcher
-    cd dhcp-batcher
+    cd proxybatcher
     sudo mkdir logs
     sudo mkdir tls
     sudo chown -R <yourusername>:<yourusername> /opt/sonar/
