@@ -1,5 +1,6 @@
-![written in Go!](https://github.com/80at8/dhcp-batcher/blob/master/assets/sonarproxybatcher.png)
-# sonar dhcp-batcher w/ integrated proxy (proxybatcher)
+# sonar dhcp-batcher w/ integrated proxy.
+![written in Go!](https://github.com/80at8/dhcp-batcher/blob/master/assets/netgopher.svg)
+
 (not for production use, poc only!).
 
 todo
@@ -37,49 +38,21 @@ each mode runs a concurrent scheduler which will batch all discovered clients to
 * proxy works with single interface or multi-interface NICs, improve edge security by running a proxy in front of your production dhcp servers!
 * no conf files to mess with, use command line switches and a shell script, or dockerize it if you like.
 
-## todo
-* ok, a conf file is needed -- I put too much stuff as flags.. will look at integrating https://github.com/spf13/viper
-* web ui for management (or make a cli tool to generate script configs .. or a cool cli config wizard would be fun)
-
-## system requirements (batcher)
-
-Requests/Second: NA
-
-    OS: Ubuntu 18.04
-    Memory: 2 GB RAM
-    CPU: 1 core
-
-## system requirements (proxy)
-
-Requests/Second: 10-20 - 30-40% CPU load
-
-    OS: Ubuntu 18.04
-    Memory: 2 GB RAM
-    CPU: 1 core
-    DHCP: 1 upstream DHCP server (2 is always better though)
-
-Requests/Second: 20-50 - 40-60% CPU load
-
-    OS: Ubuntu 18.04
-    Memory: 2 GB RAM
-    CPU: 2 core
-    DHCP: 2 upstream DHCP servers (3 is always better though)
-
-
 ## installation
 
 #### Linux
 from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.04 in this example)
 
-    sudo apt get install golang-go
-    sudo mkdir /opt/sonar/
-    cd /opt/sonar/
-    sudo git clone https://github.com/80at8/proxybatcher
-    cd proxybatcher
-    sudo mkdir logs
-    sudo mkdir tls
-    sudo chown -R <yourusername>:<yourusername> /opt/sonar/
-    go build
+    $sudo apt get install go
+    $sudo mkdir /opt/sonar/
+    $cd /opt/sonar/
+    $sudo git clone https://github.com/80at8/dhcp-batcher
+    $cd dhcp-batcher
+    $sudo mkdir logs
+    $sudo mkdir tls
+    $sudo chown -R <yourusername>:<yourusername> /opt/sonar/
+    $go get .
+    $go build
 
 #### Windows (coming soon!)
 
@@ -87,23 +60,7 @@ from a fresh linux install (whatever version you like, but we'll use Ubuntu 18.0
 
 the batcher and proxy haven't been throuroughly tested, so obviously don't use them on a production system -- I still have unit tests to write for the proxy code. I've tested the DHCP DORA proxying over a meraki relay, to the batcher-proxy to the client (Fluke LinkSprinter 200).
 
-update: throughput testing has been completed using perfdhcp, it should be quite performant for most networks where subnets have aggregate request traffic of 10 to 50 requests per second with one or two upstream dhcp servers, for more requests per second more dhcp servers and proxies should be used.
-
-Here are the numbers from perfdhcp:
-
-100/SEC
-
-    ISC Rate: 47.7622 4-way exchanges/second, expected rate: 100
-    PROXY Rate: 47.4405 4-way exchanges/second, expected rate: 100
-    
-1000/SEC
-
-    ISC Rate 388.77 4-way exchanges/second, expected rate: 1000
-    PROXY Rate: 290.86 4-way exchanges/second, expected rate: 1000
-
 Would be nice to test the API endpoints (thx Chris!) for V1 more thorougly, and convert some of the functions to function receivers and interfaces for better unit tests and code coverage.
-
-
 
 ## usage flags
 
@@ -182,12 +139,3 @@ v1 or v2 sonar instance name (use FQDN e.g: example.sonar.software)
   
     -sonar_version int
 sonar version batcher will report to, [ 1 | 2 ] (default 2)
-
-## basic command example
-
-```sudo ./proxybatcher -app_mode proxy --proxy_upstream_dhcp_ips DHCPSERVER_IP1,DHCPSERVER_IP2 --proxy_server_ip VMSERVER_IP -proxy_single_if INTERFACENAME --batch_logging_path console --batch_logging_mode debug --sonar_api_username SONAR_USERNAME --sonar_instance SONAR_INSTANCE --sonar_api_key SONAR_API```
-
-
-## optimizations to do
-
-I think (i need to profile this) the packet handling code might be faster if I do a quick deep copy of the inbound packet to the created proxied packet, then replaced giaddr on the request packets and immediately throw the packet thru a channel.. then send inbound D\O packet through another channel that builds the lease table.

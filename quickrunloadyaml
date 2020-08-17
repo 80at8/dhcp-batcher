@@ -1,0 +1,5 @@
+cd proxybatcher
+go build
+cp proxybatcher ../sonarproxybatcher
+cd ~/go/src/proxybatcher/
+./sonarproxybatcher --configurator --loadyaml
