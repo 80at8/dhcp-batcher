@@ -1,0 +1,27 @@
+operation_mode: ""
+sonar:
+  sonar_version: 0
+  sonar_api_username: ""
+  sonar_api_key: ""
+  sonar_instance: ""
+  sonar_bearer_token: ""
+batch:
+  batch_use_tls: false
+  batch_tls_key: ""
+  batch_tls_cert: ""
+  batch_username: ""
+  batch_password: ""
+  batch_ip: ""
+  batch_http_port: ""
+  batch_tls_port: ""
+  batch_cycle_time: 0
+  batch_routers: []
+proxy:
+  proxy_upstream_if: ""
+  proxy_downstream_if: ""
+  proxy_upstream_dhcp_ips: []
+  proxy_server_ip: ""
+logging:
+  logging_mode: ""
+  logging_format: ""
+  logging_output: ""
